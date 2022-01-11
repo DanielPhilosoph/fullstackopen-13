@@ -42,6 +42,7 @@ router.get("/", async (req, res) => {
         },
       },
     },
+    order: [["likes", "DESC"]],
   });
   // console.log(JSON.stringify(blogs, null, 2));
   res.json(blogs);
