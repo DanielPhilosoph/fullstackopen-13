@@ -4,6 +4,7 @@ const router = require("express").Router();
 const { SECRET } = require("../util/config");
 const User = require("../models/user");
 
+// * Should get body.username and body.password
 router.post("/", async (request, response) => {
   const body = request.body;
 
@@ -25,7 +26,10 @@ router.post("/", async (request, response) => {
     id: user.id,
   };
 
+  console.log(SECRET);
   const token = jwt.sign(userForToken, SECRET);
+  let x = jwt.verify(token, SECRET);
+  console.log(x);
 
   response
     .status(200)
