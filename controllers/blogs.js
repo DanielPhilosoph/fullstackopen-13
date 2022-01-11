@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const jwt = require("jsonwebtoken");
+const { Op } = require("sequelize");
 
 const { Blogs, User } = require("../models");
 const { isNumber } = require("../helper/functions");
@@ -31,8 +32,18 @@ router.get("/", async (req, res) => {
     include: {
       model: User,
     },
+    where: {
+      [Op.or]: {
+        title: {
+          [Op.substring]: req.query.search ? req.query.search : "",
+        },
+        author: {
+          [Op.substring]: req.query.search ? req.query.search : "",
+        },
+      },
+    },
   });
-  console.log(JSON.stringify(blogs, null, 2));
+  // console.log(JSON.stringify(blogs, null, 2));
   res.json(blogs);
 });
 
