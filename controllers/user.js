@@ -29,6 +29,9 @@ router.post("/", async (req, res) => {
     const user = await User.create(req.body);
     res.json(user);
   } catch (error) {
+    if (error.errors[0].validatorName === "isEmail") {
+      return res.status(400).json({ error: error.errors[0].message });
+    }
     return res.status(400).json({ error });
   }
 });
