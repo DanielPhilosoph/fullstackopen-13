@@ -1,11 +1,27 @@
 const router = require("express").Router();
 
-const { Blogs } = require("../models");
+const { Blogs, User } = require("../models");
 const { isNumber } = require("../helper/functions");
+const { SECRET } = require("../util/config");
 
 //? Middleware
 const blogFinder = async (req, res, next) => {
   req.blog = await Blogs.findByPk(req.params.id);
+  next();
+};
+
+//? Middleware
+const tokenExtractor = (req, res, next) => {
+  const authorization = req.get("authorization");
+  if (authorization && authorization.toLowerCase().startsWith("bearer ")) {
+    try {
+      req.decodedToken = jwt.verify(authorization.substring(7), SECRET);
+    } catch {
+      res.status(401).json({ error: "token invalid" });
+    }
+  } else {
+    res.status(401).json({ error: "token missing" });
+  }
   next();
 };
 
@@ -15,10 +31,15 @@ router.get("/", async (req, res) => {
   res.json(blogs);
 });
 
-router.post("/", async (req, res) => {
+router.post("/", tokenExtractor, async (req, res) => {
   if (req.body && req.body.title && req.body.url) {
     try {
-      const blog = await Note.create(req.body);
+      const user = await User.findByPk(req.decodedToken.id);
+      const blog = await Blogs.create({
+        ...req.body,
+        userId: user.id,
+        date: new Date(),
+      });
       return res.json(blog);
     } catch (error) {
       return res.status(400).json({ error });
@@ -37,6 +58,8 @@ router.put("/:id", blogFinder, async (req, res) => {
       req.body.likes && isNumber(req.body.likes)
         ? req.body.likes
         : req.blog.likes;
+    await req.blog.save();
+    res.json(req.blog);
   } else {
     return res
       .status(400)
