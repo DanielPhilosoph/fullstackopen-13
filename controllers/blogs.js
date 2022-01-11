@@ -28,6 +28,7 @@ const tokenExtractor = (req, res, next) => {
 };
 
 router.get("/", async (req, res) => {
+  const hasQueryParamSearch = Boolean(req.query.search);
   const blogs = await Blogs.findAll({
     include: {
       model: User,
@@ -35,10 +36,10 @@ router.get("/", async (req, res) => {
     where: {
       [Op.or]: {
         title: {
-          [Op.substring]: req.query.search ? req.query.search : "",
+          [Op.substring]: hasQueryParamSearch ? req.query.search : "",
         },
         author: {
-          [Op.substring]: req.query.search ? req.query.search : "",
+          [Op.substring]: hasQueryParamSearch ? req.query.search : "",
         },
       },
     },
@@ -67,12 +68,16 @@ router.post("/", tokenExtractor, async (req, res) => {
 });
 
 router.put("/:id", tokenExtractor, blogFinder, async (req, res) => {
+  const isBodyHasAuthor = Boolean(req.body.author);
+  const isBodyHasUrl = Boolean(req.body.url);
+  const isBodyHasTitle = Boolean(req.body.title);
+  const isBodyHasLikes = Boolean(req.body.likes);
   if (req.blog) {
-    req.blog.author = req.body.author ? req.body.author : req.blog.author;
-    req.blog.url = req.body.url ? req.body.url : req.blog.url;
-    req.blog.title = req.body.title ? req.body.title : req.blog.title;
+    req.blog.author = isBodyHasAuthor ? req.body.author : req.blog.author;
+    req.blog.url = isBodyHasUrl ? req.body.url : req.blog.url;
+    req.blog.title = isBodyHasTitle ? req.body.title : req.blog.title;
     req.blog.likes =
-      req.body.likes && isNumber(req.body.likes)
+      isBodyHasLikes && isNumber(req.body.likes)
         ? req.body.likes
         : req.blog.likes;
     await req.blog.save();
