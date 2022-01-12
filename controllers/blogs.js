@@ -4,28 +4,7 @@ const { Op } = require("sequelize");
 
 const { Blogs, User } = require("../models");
 const { isNumber } = require("../helper/functions");
-const { SECRET } = require("../util/config");
-
-//? Middleware
-const blogFinder = async (req, res, next) => {
-  req.blog = await Blogs.findByPk(req.params.id);
-  next();
-};
-
-//? Middleware
-const tokenExtractor = (req, res, next) => {
-  const authorization = req.get("authorization");
-  if (authorization && authorization.toLowerCase().startsWith("bearer ")) {
-    try {
-      req.decodedToken = jwt.verify(authorization.substring(7), SECRET);
-    } catch (error) {
-      return res.status(401).json({ error: "token invalid" });
-    }
-  } else {
-    return res.status(401).json({ error: "token missing" });
-  }
-  next();
-};
+const { blogFinder, tokenExtractor } = require("../util/middleware");
 
 router.get("/", async (req, res) => {
   const hasQueryParamSearch = Boolean(req.query.search);
@@ -53,9 +32,7 @@ router.post("/", tokenExtractor, async (req, res) => {
   if (req.body && req.body.title && req.body.url && req.body.year) {
     try {
       const isValidYear =
-        parseInt(req.body.year) > 1991 &&
-        parseInt(req.body.year) < new Date().getFullYear() &&
-        req.body.year.length === 4;
+        req.body.year > 1991 && req.body.year <= new Date().getFullYear();
       if (isValidYear) {
         const user = await User.findByPk(req.decodedToken.id);
         const blog = await Blogs.create({

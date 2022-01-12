@@ -1,26 +1,10 @@
 const router = require("express").Router();
 
 const { User, Blogs } = require("../models");
-
-//? Middleware
-const userFinder = async (req, res, next) => {
-  req.user = await User.findByPk(req.params.id);
-  next();
-};
-
-//? Middleware
-const usernameFinder = async (req, res, next) => {
-  req.user = await User.findOne({ where: { username: req.params.username } });
-  next();
-};
+const { userFinder, usernameFinder } = require("../util/middleware");
 
 router.get("/", async (req, res) => {
-  const users = await User.findAll({
-    include: {
-      model: Blogs,
-      attributes: { exclude: ["userId"] },
-    },
-  });
+  const users = await User.findAll({});
   res.json(users);
 });
 
@@ -29,9 +13,6 @@ router.post("/", async (req, res) => {
     const user = await User.create(req.body);
     res.json(user);
   } catch (error) {
-    if (error.errors[0].validatorName === "isEmail") {
-      return res.status(400).json({ error: error.errors[0].message });
-    }
     return res.status(400).json({ error });
   }
 });
