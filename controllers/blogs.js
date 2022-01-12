@@ -50,15 +50,23 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", tokenExtractor, async (req, res) => {
-  if (req.body && req.body.title && req.body.url) {
+  if (req.body && req.body.title && req.body.url && req.body.year) {
     try {
-      const user = await User.findByPk(req.decodedToken.id);
-      const blog = await Blogs.create({
-        ...req.body,
-        userId: user.id,
-        date: new Date(),
-      });
-      return res.json(blog);
+      const isValidYear =
+        parseInt(req.body.year) > 1991 &&
+        parseInt(req.body.year) < new Date().getFullYear() &&
+        req.body.year.length === 4;
+      if (isValidYear) {
+        const user = await User.findByPk(req.decodedToken.id);
+        const blog = await Blogs.create({
+          ...req.body,
+          userId: user.id,
+          date: new Date(),
+        });
+        return res.json(blog);
+      } else {
+        return res.status(400).json({ error: "Invalid Year" });
+      }
     } catch (error) {
       return res.status(400).json({ error });
     }
