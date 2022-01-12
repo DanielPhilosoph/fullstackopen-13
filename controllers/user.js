@@ -1,6 +1,7 @@
 const router = require("express").Router();
 
-const { User, Blogs } = require("../models");
+const { User, ReadingList, Blogs } = require("../models");
+const { sequelize } = require("../models/readingList");
 const { userFinder, usernameFinder } = require("../util/middleware");
 
 router.get("/", async (req, res) => {
@@ -19,7 +20,18 @@ router.post("/", async (req, res) => {
 
 router.get("/:id", userFinder, async (req, res) => {
   if (req.user) {
-    res.json(req.user);
+    try {
+      let reading = await User.findAll({
+        attributes: { exclude: ["id"] },
+        include: { model: Blogs },
+        where: { id: req.user.id },
+      });
+      //console.log(JSON.stringify(reading, null, 2));
+      res.json(reading);
+    } catch (error) {
+      console.log(error);
+      return res.status(400).json({ error });
+    }
   } else {
     res.status(404).end();
   }

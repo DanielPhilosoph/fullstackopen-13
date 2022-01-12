@@ -14,11 +14,11 @@ const sequelize = new Sequelize(DATABASE_URL, {
 
 const runMigrations = async () => {
   const migrator = new Umzug({
-    storage: new SequelizeStorage({ sequelize }),
-    storageOptions: {
-      sequelize,
-      tableName: "migrations",
-    },
+    // storage: new SequelizeStorage({ sequelize }),
+    // storageOptions: {
+    //   sequelize,
+    //   tableName: "migrations",
+    // },
     migrations: [
       {
         name: "initialize_blogs_and_users",
@@ -80,7 +80,7 @@ const runMigrations = async () => {
       {
         name: "initialize_readying_list",
         async up({ context: queryInterface }) {
-          await queryInterface.createTable("reading_list", {
+          await queryInterface.createTable("reading_lists", {
             id: {
               type: DataTypes.INTEGER,
               primaryKey: true,
@@ -96,7 +96,7 @@ const runMigrations = async () => {
               allowNull: false,
               references: { model: "blogs", key: "id" },
             },
-            read: {
+            have_read: {
               type: DataTypes.BOOLEAN,
               allowNull: false,
               defaultValue: false,
@@ -104,13 +104,14 @@ const runMigrations = async () => {
           });
         },
         async down({ context: queryInterface }) {
-          await queryInterface.dropTable("reading_list");
+          await queryInterface.dropTable("reading_lists");
         },
       },
     ],
     context: sequelize.getQueryInterface(),
   });
   const migrations = await migrator.up();
+  //const migrations = await migrator.down();
   console.log("Migrations up to date", {
     files: migrations.map((mig) => mig.file),
   });
