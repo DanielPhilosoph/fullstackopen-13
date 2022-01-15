@@ -19,15 +19,33 @@ router.post("/", async (req, res) => {
 });
 
 router.get("/:id", userFinder, async (req, res) => {
+  const readingWhere =
+    req.query.read !== undefined
+      ? {
+          have_read: req.query.read,
+        }
+      : "";
+
   if (req.user) {
     try {
-      let reading = await User.findAll({
+      let user = await User.findAll({
         attributes: { exclude: ["id"] },
-        include: { model: Blogs },
-        where: { id: req.user.id },
+        include: [
+          {
+            model: Blogs,
+            as: "reading",
+            through: {
+              where: readingWhere,
+            },
+          },
+        ],
+        where: { id: req.params.id },
       });
+
+      // let x = await ReadingList.findAll({ include: User });
+      // console.log(x);
       //console.log(JSON.stringify(reading, null, 2));
-      res.json(reading);
+      res.json(user);
     } catch (error) {
       console.log(error);
       return res.status(400).json({ error });
