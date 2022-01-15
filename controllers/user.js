@@ -33,7 +33,6 @@ router.get("/:id", userFinder, async (req, res) => {
         include: [
           {
             model: Blogs,
-            as: "reading",
             through: {
               where: readingWhere,
             },
@@ -42,13 +41,11 @@ router.get("/:id", userFinder, async (req, res) => {
         where: { id: req.params.id },
       });
 
-      // let x = await ReadingList.findAll({ include: User });
-      // console.log(x);
       //console.log(JSON.stringify(reading, null, 2));
       res.json(user);
     } catch (error) {
       console.log(error);
-      return res.status(400).json({ error });
+      return res.status(400).json({ error: error });
     }
   } else {
     res.status(404).end();

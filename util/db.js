@@ -65,6 +65,10 @@ const runMigrations = async () => {
               type: DataTypes.STRING,
               allowNull: false,
             },
+            disabled: {
+              type: DataTypes.BOOLEAN,
+              allowNull: false,
+            },
           });
           await queryInterface.addColumn("blogs", "user_id", {
             type: DataTypes.INTEGER,

@@ -9,7 +9,10 @@ router.post("/", tokenExtractor, async (req, res) => {
     try {
       const user = await User.findByPk(req.body.user_id);
       const blog = await Blogs.findByPk(req.body.blog_id);
-      await user.addBlogs(blog, { through: { have_read: true } });
+      await user.addBlogs(blog, {
+        as: "reading",
+        through: { have_read: true },
+      });
       //await blog.addUser(user, { through: { have_read: true } });
       return res.send("yay");
     } catch (error) {
